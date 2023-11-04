@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const TokenIdKey key = "2"
+const TokenIdKey contextKey = "2"
 
 // Auth is a middleware function that handles authentication.
 func (m Middlewear) Auth(next gin.HandlerFunc) gin.HandlerFunc {

@@ -9,29 +9,35 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Middleware represents the middleware structure.
 type Middlewear struct {
 	a *auth.Auth
 }
 
+// NewMiddleware creates a new instance of Middleware.
 func NewMiddleWear(a *auth.Auth) (Middlewear, error) {
 	return Middlewear{a: a}, nil
 }
 
-type key string
+type contextKey string
 
-const TraceIdKey key = "1"
+const TraceIdKey contextKey = "1"
 
+// Log returns a Gin middleware for logging.
 func (m Middlewear) Log() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
-		traceId := uuid.NewString()
+		// Generate a new trace ID.
+		traceID := uuid.NewString()
 		ctx := c.Request.Context()
-		ctx = context.WithValue(ctx, TraceIdKey, traceId)
+
+		// Store the trace ID in the context.
+		ctx = context.WithValue(ctx, TraceIdKey, traceID)
 		req := c.Request.WithContext(ctx)
 		c.Request = req
 
-		log.Info().Str("traceId", traceId).Msg("in log file")
-		defer log.Logger.Info().Msg("request processing complete")
+		log.Info().Str("traceID", traceID).Msg("Logging in the file")
+		defer log.Logger.Info().Msg("Request processing complete")
 		c.Next()
 
 	}
