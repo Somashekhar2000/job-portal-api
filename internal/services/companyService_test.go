@@ -15,33 +15,32 @@ func TestService_CompanyCreate(t *testing.T) {
 		nc model.CreateCompany
 	}
 	tests := []struct {
-		name string
-		//s       *Service
+		name             string
 		args             args
 		want             model.Company
 		wantErr          bool
 		mockRepoResponse func() (model.Company, error)
 	}{
 		{
-			name: "success",
-			want: model.Company{CompanyName: "tcs", Adress: "bangalore", Domain: "software"},
+			name: "=======success case========",
+			want: model.Company{CompanyName: "TEK", Adress: "BENGALURU", Domain: "IT"},
 			args: args{
-				nc: model.CreateCompany{CompanyName: "tcs", Adress: "bangalore", Domain: "software"},
+				nc: model.CreateCompany{CompanyName: "TEK", Adress: "BENGALURU", Domain: "IT"},
 			},
 			wantErr: false,
 			mockRepoResponse: func() (model.Company, error) {
-				return model.Company{CompanyName: "tcs", Adress: "bangalore", Domain: "software"}, nil
+				return model.Company{CompanyName: "TEK", Adress: "BENGALURU", Domain: "IT"}, nil
 			},
 		},
 		{
-			name: "invalid input-failure case",
+			name: "===========invalid input : failure case==========",
 			want: model.Company{},
 			args: args{
-				nc: model.CreateCompany{CompanyName: "", Adress: "bangalore", Domain: "software"},
+				nc: model.CreateCompany{CompanyName: "", Adress: "asdfgh", Domain: "engineer"},
 			},
 			wantErr: true,
 			mockRepoResponse: func() (model.Company, error) {
-				return model.Company{}, errors.New("test error")
+				return model.Company{}, errors.New("error in test case")
 			},
 		},
 	}
@@ -59,11 +58,11 @@ func TestService_CompanyCreate(t *testing.T) {
 			got, err := s.CompanyCreate(tt.args.nc)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.CompanyCreate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.CompanyCreate() error = %v, wantErr = %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Service.CompanyCreate() = %v, want %v", got, tt.want)
+				t.Errorf("Service.CompanyCreate() = %v, want = %v", got, tt.want)
 			}
 		})
 	}
@@ -74,8 +73,7 @@ func TestService_GetCompany(t *testing.T) {
 		id int
 	}
 	tests := []struct {
-		name string
-		//s       *Service
+		name             string
 		args             args
 		want             model.Company
 		wantErr          bool
@@ -83,24 +81,24 @@ func TestService_GetCompany(t *testing.T) {
 	}{
 		{
 			name: "success",
-			want: model.Company{CompanyName: "tcs", Adress: "bangalore", Domain: "software"},
+			want: model.Company{CompanyName: "google", Adress: "mysore", Domain: "development"},
 			args: args{
 				id: 1,
 			},
 			wantErr: false,
 			mockRepoResponse: func() (model.Company, error) {
-				return model.Company{CompanyName: "tcs", Adress: "bangalore", Domain: "software"}, nil
+				return model.Company{CompanyName: "google", Adress: "mysore", Domain: "development"}, nil
 			},
 		},
 		{
-			name: "failure",
+			name: "============failure case===========",
 			want: model.Company{},
 			args: args{
 				id: 12,
 			},
 			wantErr: true,
 			mockRepoResponse: func() (model.Company, error) {
-				return model.Company{}, errors.New("id cannnot be greater")
+				return model.Company{}, errors.New("ID is not been greater")
 			},
 		},
 	}
@@ -117,11 +115,11 @@ func TestService_GetCompany(t *testing.T) {
 			got, err := s.GetCompanyById(tt.args.id)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetCompany() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.GetCompany() error = %v, wantErr = %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Service.GetCompany() = %v, want %v", got, tt.want)
+				t.Errorf("Service.GetCompany() = %v, want = %v", got, tt.want)
 			}
 		})
 	}
@@ -129,26 +127,25 @@ func TestService_GetCompany(t *testing.T) {
 
 func TestService_GetAllCompanies(t *testing.T) {
 	tests := []struct {
-		name string
-		//s       *Service
+		name             string
 		want             []model.Company
 		wantErr          bool
 		mockRepoResponse func() ([]model.Company, error)
 	}{
 		{
-			name:    "success",
-			want:    []model.Company{{CompanyName: "tcs", Adress: "bangalore", Domain: "sde"}, {CompanyName: "Tek", Adress: "hyd", Domain: "sde"}},
+			name:    "=======success case==========",
+			want:    []model.Company{{CompanyName: "wipro", Adress: "sdfgh", Domain: "sde"}, {CompanyName: "micro", Adress: "dfgh", Domain: "wedfgh"}},
 			wantErr: false,
 			mockRepoResponse: func() ([]model.Company, error) {
-				return []model.Company{{CompanyName: "tcs", Adress: "bangalore", Domain: "sde"}, {CompanyName: "Tek", Adress: "hyd", Domain: "sde"}}, nil
+				return []model.Company{{CompanyName: "wipro", Adress: "sdfgh", Domain: "sde"}, {CompanyName: "micro", Adress: "dfgh", Domain: "wedfgh"}}, nil
 			},
 		},
 		{
-			name:    "failure",
+			name:    "============failure case ==========",
 			want:    nil,
 			wantErr: true,
 			mockRepoResponse: func() ([]model.Company, error) {
-				return []model.Company{}, errors.New("no company created to get company's")
+				return []model.Company{}, errors.New("cannot get companies no companies are created")
 			},
 		},
 	}
@@ -166,11 +163,11 @@ func TestService_GetAllCompanies(t *testing.T) {
 			got, err := s.GetAllCompanies()
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetAllCompanies() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.GetAllCompanies() error = %v, wantErr = %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Service.GetAllCompanies() = %v, want %v", got, tt.want)
+				t.Errorf("Service.GetAllCompanies() = %v, want = %v", got, tt.want)
 			}
 		})
 	}
@@ -182,33 +179,32 @@ func TestService_JobCreate(t *testing.T) {
 		id uint64
 	}
 	tests := []struct {
-		name string
-		//s       *Service
+		name             string
 		args             args
 		want             model.Job
 		wantErr          bool
 		mockRepoResponse func() (model.Job, error)
 	}{{
-		name: "success",
-		want: model.Job{JobTitle: "tcs", JobSalary: "bangalore", Uid: 1},
+		name: "===========success case=========",
+		want: model.Job{JobTitle: "TEK", JobSalary: "Bengaluru", Uid: 1},
 		args: args{
-			nj: model.CreateJob{JobTitle: "tcs", JobSalary: "bangalore"},
+			nj: model.CreateJob{JobTitle: "TEK", JobSalary: "Bengaluru"},
 			id: 1,
 		},
 		wantErr: false,
 		mockRepoResponse: func() (model.Job, error) {
-			return model.Job{JobTitle: "tcs", JobSalary: "bangalore", Uid: 1}, nil
+			return model.Job{JobTitle: "TEK", JobSalary: "Bengaluru", Uid: 1}, nil
 		},
 	},
-		{name: "failure",
+		{name: "===========failure case ===========",
 			want: model.Job{},
 			args: args{
-				nj: model.CreateJob{JobTitle: "", JobSalary: "bangalore"},
+				nj: model.CreateJob{JobTitle: "", JobSalary: "asdfg"},
 				id: 1,
 			},
 			wantErr: true,
 			mockRepoResponse: func() (model.Job, error) {
-				return model.Job{}, errors.New("test error")
+				return model.Job{}, errors.New("error in test case")
 			}},
 	}
 	for _, tt := range tests {
@@ -239,33 +235,32 @@ func TestService_GetJobs(t *testing.T) {
 		id int
 	}
 	tests := []struct {
-		name string
-		//s       *Service
+		name             string
 		args             args
 		want             []model.Job
 		wantErr          bool
 		mockRepoResponse func() ([]model.Job, error)
 	}{
 		{
-			name: "success",
-			want: []model.Job{{JobTitle: "tcs", JobSalary: "bangalore", Uid: 1}},
+			name: "========success case======",
+			want: []model.Job{{JobTitle: "sdfgh", JobSalary: "wedfg", Uid: 1}},
 			args: args{
 				id: 1,
 			},
 			wantErr: false,
 			mockRepoResponse: func() ([]model.Job, error) {
-				return []model.Job{{JobTitle: "tcs", JobSalary: "bangalore", Uid: 1}}, nil
+				return []model.Job{{JobTitle: "sdfgh", JobSalary: "wedfg", Uid: 1}}, nil
 			},
 		},
 		{
-			name: "failure",
+			name: "===========failure case ==========",
 			want: nil,
 			args: args{
 				id: 12,
 			},
 			wantErr: true,
 			mockRepoResponse: func() ([]model.Job, error) {
-				return nil, errors.New("id cannnot be greater")
+				return nil, errors.New("id doest not exists")
 			},
 		},
 	}
@@ -294,26 +289,25 @@ func TestService_GetJobs(t *testing.T) {
 
 func TestService_GetAllJobs(t *testing.T) {
 	tests := []struct {
-		name string
-		//s       *Service
+		name             string
 		want             []model.Job
 		wantErr          bool
 		mockRepoResponse func() ([]model.Job, error)
 	}{
 		{
-			name:    "success",
-			want:    []model.Job{{JobTitle: "sde", JobSalary: "234", Uid: 1}, {JobTitle: "aws", JobSalary: "890", Uid: 2}},
+			name:    "==========success==========",
+			want:    []model.Job{{JobTitle: "asdfg", JobSalary: "12345", Uid: 1}, {JobTitle: "swdf", JobSalary: "12345", Uid: 2}},
 			wantErr: false,
 			mockRepoResponse: func() ([]model.Job, error) {
-				return []model.Job{{JobTitle: "sde", JobSalary: "234", Uid: 1}, {JobTitle: "aws", JobSalary: "890", Uid: 2}}, nil
+				return []model.Job{{JobTitle: "asdfg", JobSalary: "12345", Uid: 1}, {JobTitle: "swdf", JobSalary: "12345", Uid: 2}}, nil
 			},
 		},
 		{
-			name:    "failure",
+			name:    "==========failure case=======",
 			want:    nil,
 			wantErr: true,
 			mockRepoResponse: func() ([]model.Job, error) {
-				return []model.Job{}, errors.New("no jobs created to get jobs")
+				return []model.Job{}, errors.New("jobs doesnot exists")
 			},
 		},
 	}
