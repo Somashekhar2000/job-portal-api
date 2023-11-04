@@ -80,13 +80,12 @@ func startApp() error {
 	}
 
 	// Configure and start the HTTP server.
-	api := http.Server{ //server config and settimngs
+	api := http.Server{
 		Addr:    ":8085",
 		Handler: handlers.Api(authInstance, serviceInstance),
 	}
 	api.ListenAndServe()
 
-	// Application setup and server start completed successfully.
 	return nil
 
 }
