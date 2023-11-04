@@ -14,57 +14,79 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ===================main()===============================
 func main() {
+
+	// starting the application.
 	err := startApp()
+
+	// Check if there was an error while starting the application.
 	if err != nil {
+		// Log a panic and include the error details if an error occurred.
 		log.Panic().Err(err).Send()
 	}
+
 }
+
+// =============================startApp()============================
 func startApp() error {
-	log.Info().Msg("started main")
+
+	// Log that the application has started.
+	log.Info().Msg("Starting job portal application")
+
+	// Load the private RSA key from a file.
 	privatePEM, err := os.ReadFile(`C:\Users\ORR Training 3\Desktop\job-portal-api\private.pem`)
 	if err != nil {
-		return fmt.Errorf("cannot find file private.pem %w", err)
+		return fmt.Errorf("failed to load private.pem file: %w", err)
 	}
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privatePEM)
 	if err != nil {
-		return fmt.Errorf("cannot convert byte to key %w", err)
+		return fmt.Errorf("failed to parse private key from bytes: %w", err)
 	}
 
+	// Load the public RSA key from a file.
 	publicPEM, err := os.ReadFile(`C:\Users\ORR Training 3\Desktop\job-portal-api\pubkey.pem`)
 	if err != nil {
-		return fmt.Errorf("cannot find file pubkey.pem %w", err)
+		return fmt.Errorf("failed to load pubkey.pem file: %w", err)
 	}
+
 	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicPEM)
 	if err != nil {
-		return fmt.Errorf("cannot convert byte to key %w", err)
-	}
-	a, err := auth.NewAuth(privateKey, publicKey)
-	if err != nil {
-		return fmt.Errorf("cannot create auth instance %w", err)
+		return fmt.Errorf("failed to parse public key from bytes: %w", err)
 	}
 
+	// Create an authentication instance using the loaded keys.
+	authInstance, err := auth.NewAuth(privateKey, publicKey)
+	if err != nil {
+		return fmt.Errorf("failed to create authentication instance: %w", err)
+	}
+
+	// Establish a connection to the database.
 	db, err := database.Connection()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to connect to the database: %w", err)
 	}
+
+	// Initialize a repository with the database connection.
 	repo, err := repository.NewRepo(db)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to initialize repository: %w", err)
 	}
 
-	se, err := services.NewService(repo, repo)
-
+	// Create a service instance using the repository.
+	serviceInstance, err := services.NewService(repo, repo)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create service instance: %w", err)
 	}
 
+	// Configure and start the HTTP server.
 	api := http.Server{ //server config and settimngs
 		Addr:    ":8085",
-		Handler: handlers.Api(a, se),
+		Handler: handlers.Api(authInstance, serviceInstance),
 	}
 	api.ListenAndServe()
 
+	// Application setup and server start completed successfully.
 	return nil
 
 }
