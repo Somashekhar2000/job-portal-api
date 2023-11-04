@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Open initializes a database connection and returns a GORM database instance.
 func Open() (*gorm.DB, error) {
 	dsn := "host=localhost user=postgres password=1234 dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
