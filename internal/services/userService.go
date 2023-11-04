@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 
 	"project/internal/model"
 	"project/internal/repository"
@@ -14,68 +13,75 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// NewService creates a new Service instance with the given user and company repositories.
 type Service struct {
-	r repository.Users
-	c repository.Company
+	userRepo    repository.Users
+	companyRepo repository.Company
 }
 
-// GetCompanyById implements CompanyService.
-
-func NewService(r repository.Users, c repository.Company) (*Service, error) {
-	if r == nil {
-		return nil, errors.New("db connection not given")
+// NewService creates a new Service instance with the given user and company repositories.
+func NewService(userRepo repository.Users, companyRepo repository.Company) (*Service, error) {
+	if userRepo == nil {
+		return nil, errors.New("user/company repository not provided")
 	}
 
-	return &Service{r: r, c: c}, nil
+	return &Service{userRepo: userRepo, companyRepo: companyRepo}, nil
 
 }
 
+// UsersService is an interface for user-related operations.
+//
 //go:generate mockgen -source=userService.go -destination=userservice_mock.go -package=services
 type UsersService interface {
-	UserSignup(nu model.UserSignup) (model.User, error)
-	Userlogin(l model.UserLogin) (jwt.RegisteredClaims, error)
+	UserSignup(userSignup model.UserSignup) (model.User, error)
+	Userlogin(userLogin model.UserLogin) (jwt.RegisteredClaims, error)
 }
 
-func (s *Service) UserSignup(nu model.UserSignup) (model.User, error) {
+// UserSignup registers a new user with the provided user signup details.
+func (s *Service) UserSignup(userSignup model.UserSignup) (model.User, error) {
 
-	hashedPass, err := bcrypt.GenerateFromPassword([]byte(nu.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userSignup.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Error().Msg("error occured in hashing password")
-		return model.User{}, errors.New("hashing password failed")
+		log.Error().Msg("error occurred while hashing password")
+		return model.User{}, errors.New("password hashing failed")
 	}
 
-	user := model.User{UserName: nu.UserName, Email: nu.Email, PasswordHash: string(hashedPass)}
-	// database.CreateTable()
-	cu, err := s.r.CreateUser(user)
+	user := model.User{UserName: userSignup.UserName, Email: userSignup.Email, PasswordHash: string(hashedPassword)}
+
+	createdUser, err := s.userRepo.CreateUser(user)
 	if err != nil {
-		log.Error().Err(err).Msg("couldnot create user")
+		log.Error().Err(err).Msg("failed to create user")
 		return model.User{}, errors.New("user creation failed")
 	}
 
-	return cu, nil
+	return createdUser, nil
 
 }
-func (s *Service) Userlogin(l model.UserLogin) (jwt.RegisteredClaims, error) {
-	fu, err := s.r.FetchUserByEmail(l.Email)
+
+// UserLogin attempts to authenticate a user based on login credentials.
+func (s *Service) Userlogin(userLogin model.UserLogin) (jwt.RegisteredClaims, error) {
+
+	fetchedUser, err := s.userRepo.FetchUserByEmail(userLogin.Email)
 	if err != nil {
 		log.Error().Err(err).Msg("couldnot find user")
 		return jwt.RegisteredClaims{}, errors.New("user login failed")
 	}
-	fmt.Println(fu)
-	err = bcrypt.CompareHashAndPassword([]byte(fu.PasswordHash), []byte(l.Password))
+
+	err = bcrypt.CompareHashAndPassword([]byte(fetchedUser.PasswordHash), []byte(userLogin.Password))
 	if err != nil {
 		log.Error().Err(err).Msg("password of user incorrect")
 		return jwt.RegisteredClaims{}, errors.New("user login failed")
 	}
-	c := jwt.RegisteredClaims{
+
+	// Create JWT claims for the authenticated user.
+	claims := jwt.RegisteredClaims{
 		Issuer:    "service project",
-		Subject:   strconv.FormatUint(uint64(fu.ID), 10),
+		Subject:   strconv.FormatUint(uint64(fetchedUser.ID), 10),
 		Audience:  jwt.ClaimStrings{"users"},
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
-	fmt.Println(c)
 
-	return c, nil
+	return claims, nil
 
 }

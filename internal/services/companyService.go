@@ -7,93 +7,105 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// CompanyService is an interface for managing companies and jobs.
+//
 //go:generate mockgen -source=companyService.go -destination=companyservice_mock.go -package=services
 type CompanyService interface {
-	CompanyCreate(nc model.CreateCompany) (model.Company, error)
+	CompanyCreate(newCompany model.CreateCompany) (model.Company, error)
 	GetAllCompanies() ([]model.Company, error)
 	GetCompanyById(id int) (model.Company, error)
-	JobCreate(nj model.CreateJob, id uint64) (model.Job, error)
-	GetJobsByCompanyId(id int) ([]model.Job, error)
+	JobCreate(newJob model.CreateJob, id uint64) (model.Job, error)
+	GetJobsByCompanyId(companyID int) ([]model.Job, error)
 	GetAllJobs() ([]model.Job, error)
-	GetJobByJobId(id int) (model.Job, error)
+	GetJobByJobId(jobID int) (model.Job, error)
 }
 
-func (s *Service) CompanyCreate(nc model.CreateCompany) (model.Company, error) {
-	company := model.Company{CompanyName: nc.CompanyName, Adress: nc.Adress, Domain: nc.Domain}
-	cu, err := s.c.CreateCompany(company)
+// CompanyCreate creates a new company based on the provided company details.
+func (s *Service) CompanyCreate(newCompany model.CreateCompany) (model.Company, error) {
+	company := model.Company{CompanyName: newCompany.CompanyName, Adress: newCompany.Adress, Domain: newCompany.Domain}
+
+	// Attempt to create the company in the repository.
+	createdCompany, err := s.companyRepo.CreateCompany(company)
 	if err != nil {
-		log.Error().Err(err).Msg("couldnot create company")
+		log.Error().Err(err).Msg("Failed to create the company")
 		return model.Company{}, errors.New("company creation failed")
 	}
 
-	return cu, nil
+	return createdCompany, nil
 }
 
+// GetAllCompanies retrieves a list of all companies from the service.
 func (s *Service) GetAllCompanies() ([]model.Company, error) {
 
-	AllCompanies, err := s.c.GetAllCompany()
+	companies, err := s.companyRepo.GetAllCompany()
 	if err != nil {
-		log.Error().Err(err).Msg("couldnot get companies")
+		log.Error().Err(err).Msg("Failed to retrieve companies")
 		return nil, err
 	}
-	return AllCompanies, nil
+	return companies, nil
 
 }
 
+// GetCompanyByID retrieves a company by its ID from the service.
 func (s *Service) GetCompanyById(id int) (model.Company, error) {
 	if id > 10 {
-		return model.Company{}, errors.New("id cannnot be greater")
+		return model.Company{}, errors.New("ID should be 10 or less")
 	}
-	Companies, err := s.c.GetCompany(id)
+	company, err := s.companyRepo.GetCompany(id)
 	if err != nil {
-		log.Error().Err(err).Msg("couldnot get company")
+		log.Error().Err(err).Msg("failed to fetch company")
 		return model.Company{}, err
 	}
-	return Companies, nil
+	return company, nil
 
 }
 
-func (s *Service) JobCreate(nj model.CreateJob, id uint64) (model.Job, error) {
-	job := model.Job{JobTitle: nj.JobTitle, JobSalary: nj.JobSalary, Uid: id}
-	cu, err := s.c.CreateJob(job)
+// JobCreate creates a new job using the provided job details and associated user ID.
+func (s *Service) JobCreate(newJob model.CreateJob, id uint64) (model.Job, error) {
+
+	job := model.Job{JobTitle: newJob.JobTitle, JobSalary: newJob.JobSalary, Uid: id}
+	createdJob, err := s.companyRepo.CreateJob(job)
 	if err != nil {
-		log.Error().Err(err).Msg("couldnot create job")
+		log.Error().Err(err).Msg("Failed to create job")
 		return model.Job{}, errors.New("job creation failed")
 	}
 
-	return cu, nil
+	return createdJob, nil
 }
 
-func (s *Service) GetJobsByCompanyId(id int) ([]model.Job, error) {
-	if id > 10 {
-		return nil, errors.New("id cannnot be greater")
+// GetJobsByCompanyID retrieves a list of jobs associated with a company by its ID.
+func (s *Service) GetJobsByCompanyId(companyID int) ([]model.Job, error) {
+	if companyID > 10 {
+		return nil, errors.New("company ID cannot be greater than 10")
 	}
-	AllCompanies, err := s.c.GetJobs(id)
+	jobs, err := s.companyRepo.GetJobs(companyID)
 	if err != nil {
-		return nil, errors.New("job retreval failed")
+		return nil, errors.New("failed to retrieve jobs")
 	}
-	return AllCompanies, nil
+	return jobs, nil
 }
 
+// GetAllJobs retrieves a list of all available jobs.
 func (s *Service) GetAllJobs() ([]model.Job, error) {
 
-	AllJobs, err := s.c.GetAllJobs()
+	allJobs, err := s.companyRepo.GetAllJobs()
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to retrieve jobs")
 	}
-	return AllJobs, nil
+	return allJobs, nil
 
 }
 
+// GetJobByID retrieves a job by its unique identifier.
 func (s *Service) GetJobByJobId(id int) (model.Job, error) {
 	if id > 10 {
-		return model.Job{}, errors.New("id cannnot be greater")
+		return model.Job{}, errors.New("ID cannot be greater than 10")
 	}
-	Companies, err := s.c.GetJobsByJobId(id)
+	job, err := s.companyRepo.GetJobsByJobId(id)
 	if err != nil {
-		log.Error().Err(err).Msg("couldnot get company")
+		log.Error().Err(err).Msg("Failed to retrieve job from the repository")
 		return model.Job{}, err
 	}
-	return Companies, nil
+	return job, nil
 
 }
