@@ -57,7 +57,7 @@ func (h *handler) userSignup(c *gin.Context) {
 	us, err := h.us.UserSignup(userCreate)
 	if err != nil {
 		log.Error().Err(err).Str("Trace Id", traceId).Msg("user signup problem")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "user signup failed"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusBadRequest})
 		return
 	}
 	c.JSON(http.StatusOK, us)

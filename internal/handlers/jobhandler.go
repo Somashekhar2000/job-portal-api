@@ -54,7 +54,7 @@ func (h *handler) companyCreation(c *gin.Context) {
 	us, err := h.cs.CompanyCreate(companyCreation)
 	if err != nil {
 		log.Error().Err(err).Str("Trace Id", traceId).Msg("company creation problem in db")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "compoany creation failed"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "compoany creation failed"})
 		return
 	}
 	c.JSON(http.StatusOK, us)
