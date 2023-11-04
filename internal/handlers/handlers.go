@@ -8,20 +8,28 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Api(a *auth.Auth, s *services.Service) *gin.Engine {
-	r := gin.New()
-	h, _ := NewHandler(a, s, s)
-	//h := handler{a: a, us: s, cs: s}
-	m, _ := middlewear.NewMiddleWear(a)
-	r.Use(m.Log(), gin.Recovery())
-	r.POST("/api/register", h.userSignup)
-	r.POST("/api/login", h.userLogin)
-	r.POST("/api/companies", m.Auth(h.companyCreation))
-	r.GET("/api/companies", m.Auth(h.getAllCompany))
-	r.GET(" /api/company/:company_id", m.Auth(h.getCompanyById))
-	r.POST("/api/companies/:company_id/jobs", m.Auth(h.postJobByCompany))
-	r.GET("/api/companies/:company_id/jobs", m.Auth(h.getJobByCompany))
-	r.GET("/api/jobs", m.Auth(h.getAllJob))
-	r.GET("/api/jobs/:job_id", m.Auth(h.getJobByJobId))
-	return r
+// API creates and configures a new Gin Engine for the API.
+func API(authService *auth.Auth, service *services.Service) *gin.Engine {
+
+	router := gin.New()
+
+	handler, _ := NewHandler(authService, service, service)
+
+	middleware, _ := middlewear.NewMiddleWear(authService)
+
+	// Use logging and recovery middleware
+	router.Use(middleware.Log(), gin.Recovery())
+
+	// Define API routes.
+	router.POST("/api/register", handler.userSignup)
+	router.POST("/api/login", handler.userLogin)
+	router.POST("/api/companies", middleware.Auth(handler.companyCreation))
+	router.GET("/api/companies", middleware.Auth(handler.getAllCompany))
+	router.GET(" /api/company/:company_id", middleware.Auth(handler.getCompanyById))
+	router.POST("/api/companies/:company_id/jobs", middleware.Auth(handler.postJobByCompany))
+	router.GET("/api/companies/:company_id/jobs", middleware.Auth(handler.getJobByCompany))
+	router.GET("/api/jobs", middleware.Auth(handler.getAllJob))
+	router.GET("/api/jobs/:job_id", middleware.Auth(handler.getJobByJobId))
+
+	return router
 }
