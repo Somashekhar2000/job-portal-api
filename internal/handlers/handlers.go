@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"fmt"
+	"net/http"
 	"project/internal/auth"
 	"project/internal/middlewear"
 	"project/internal/services"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +24,7 @@ func API(authService *auth.Auth, service *services.Service) *gin.Engine {
 	router.Use(middleware.Log(), gin.Recovery())
 
 	// Define API routes.
+	router.GET("/api/check", check)
 	router.POST("/api/register", handler.userSignup)
 	router.POST("/api/login", handler.userLogin)
 	router.POST("/api/companies", middleware.Auth(handler.companyCreation))
@@ -32,4 +36,18 @@ func API(authService *auth.Auth, service *services.Service) *gin.Engine {
 	router.GET("/api/jobs/:job_id", middleware.Auth(handler.getJobByJobId))
 
 	return router
+}
+
+func check(c *gin.Context) {
+
+	time.Sleep(time.Second * 3)
+	select {
+	case <-c.Request.Context().Done():
+		fmt.Println("user not there")
+		return
+	default:
+		c.JSON(http.StatusOK, gin.H{"msg": "statusOk"})
+
+	}
+
 }
