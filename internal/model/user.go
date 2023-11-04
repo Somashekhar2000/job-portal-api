@@ -1,11 +1,10 @@
 package model
 
 import (
-	//"project/internal/database"
-
 	"gorm.io/gorm"
 )
 
+// User represents a user in the system.
 type User struct {
 	gorm.Model
 	UserName     string `json:"name"  gorm:"unique"`
@@ -13,22 +12,15 @@ type User struct {
 	PasswordHash string `json:"-" validate:"required"`
 }
 
+// UserSignup represents user registration data.
 type UserSignup struct {
 	UserName string `json:"name" validate:"required"`
 	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
 
+// UserLogin represents user login data.
 type UserLogin struct {
 	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
-
-// func (m *UserSignup) Read(p []byte) (n int, err error) {
-// 	if m.pos >= len(m.data) {
-// 		return 0, io.EOF
-// 	}
-// 	n = copy(p, m.data[m.pos:])
-// 	m.pos += n
-// 	return n, nil
-// }
