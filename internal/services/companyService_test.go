@@ -101,6 +101,17 @@ func TestService_GetCompany(t *testing.T) {
 				return model.Company{}, errors.New("ID is not been greater")
 			},
 		},
+		{
+			name: "============failure case===========",
+			want: model.Company{},
+			args: args{
+				id: 1,
+			},
+			wantErr: true,
+			mockRepoResponse: func() (model.Company, error) {
+				return model.Company{}, errors.New("ID is not been greater")
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -263,6 +274,17 @@ func TestService_GetJobs(t *testing.T) {
 				return nil, errors.New("id doest not exists")
 			},
 		},
+		{
+			name: "===========failure case ==========",
+			want: nil,
+			args: args{
+				id: 1,
+			},
+			wantErr: true,
+			mockRepoResponse: func() ([]model.Job, error) {
+				return nil, errors.New("id doest not exists")
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -322,6 +344,67 @@ func TestService_GetAllJobs(t *testing.T) {
 			}
 			s, _ := NewService(mockUserRepo, mockCompanyRepo)
 			got, err := s.GetAllJobs()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.GetAllJobs() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Service.GetAllJobs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestService_GetJobByJobId(t *testing.T) {
+	type args struct {
+		id int
+	}
+	tests := []struct {
+		name             string
+		args             args
+		want             model.Job
+		wantErr          bool
+		mockRepoResponse func() (model.Job, error)
+	}{
+		{
+			name:    "invalid id",
+			args:    args{id: 15},
+			want:    model.Job{},
+			wantErr: true,
+			mockRepoResponse: func() (model.Job, error) {
+				return model.Job{}, errors.New("ID cannot be greater than 10")
+			},
+		},
+		{
+			name:    "id does not exists",
+			args:    args{id: 2},
+			want:    model.Job{},
+			wantErr: true,
+			mockRepoResponse: func() (model.Job, error) {
+				return model.Job{}, errors.New("Failed to retrieve job from the repository")
+			},
+		},
+		{
+			name:    "success",
+			args:    args{id: 1},
+			want:    model.Job{},
+			wantErr: false,
+			mockRepoResponse: func() (model.Job, error) {
+				return model.Job{}, nil
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			mockCompanyRepo := repository.NewMockCompany(mc)
+			mockUserRepo := repository.NewMockUsers(mc)
+
+			if tt.mockRepoResponse != nil {
+				mockCompanyRepo.EXPECT().GetJobsByJobId(gomock.Any()).Return(tt.mockRepoResponse()).AnyTimes()
+			}
+			s, _ := NewService(mockUserRepo, mockCompanyRepo)
+			got, err := s.GetJobByJobId(tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.GetAllJobs() error = %v, wantErr %v", err, tt.wantErr)
 				return

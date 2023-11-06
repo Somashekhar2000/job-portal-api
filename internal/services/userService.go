@@ -31,11 +31,6 @@ func NewService(userRepo repository.Users, companyRepo repository.Company) (*Ser
 
 // UsersService is an interface for user-related operations.
 //
-//go:generate mockgen -source=userService.go -destination=userservice_mock.go -package=services
-type UsersService interface {
-	UserSignup(userSignup model.UserSignup) (model.User, error)
-	Userlogin(userLogin model.UserLogin) (jwt.RegisteredClaims, error)
-}
 
 // UserSignup registers a new user with the provided user signup details.
 func (s *Service) UserSignup(userSignup model.UserSignup) (model.User, error) {

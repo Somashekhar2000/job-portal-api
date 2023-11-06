@@ -9,16 +9,6 @@ import (
 
 // CompanyService is an interface for managing companies and jobs.
 //
-//go:generate mockgen -source=companyService.go -destination=companyservice_mock.go -package=services
-type CompanyService interface {
-	CompanyCreate(newCompany model.CreateCompany) (model.Company, error)
-	GetAllCompanies() ([]model.Company, error)
-	GetCompanyById(id int) (model.Company, error)
-	JobCreate(newJob model.CreateJob, id uint64) (model.Job, error)
-	GetJobsByCompanyId(companyID int) ([]model.Job, error)
-	GetAllJobs() ([]model.Job, error)
-	GetJobByJobId(jobID int) (model.Job, error)
-}
 
 // CompanyCreate creates a new company based on the provided company details.
 func (s *Service) CompanyCreate(newCompany model.CreateCompany) (model.Company, error) {

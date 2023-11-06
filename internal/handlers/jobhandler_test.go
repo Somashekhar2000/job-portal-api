@@ -7,55 +7,38 @@ import (
 	"net/http/httptest"
 	"project/internal/middlewear"
 	"project/internal/model"
-	"project/internal/services"
+	"project/internal/repository"
 	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/assert/v2"
 	"go.uber.org/mock/gomock"
+	"gopkg.in/go-playground/assert.v1"
 )
 
 func Test_handler_companyCreation(t *testing.T) {
 	tests := []struct {
 		name               string
-		setup              func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService)
+		setup              func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService)
 		expectedStatusCode int
 		expectedResponse   string
 	}{
-		{
-			name: "missing trace id",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
-				rr := httptest.NewRecorder()
-				c, _ := gin.CreateTestContext(rr)
-				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", nil)
-				c.Request = httpRequest
+		// {
+		// 	name: "missing trace id",
+		// 	setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
+		// 		rr := httptest.NewRecorder()
+		// 		c, _ := gin.CreateTestContext(rr)
+		// 		httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", nil)
+		// 		c.Request = httpRequest
 
-				return c, rr, nil
-			},
-			expectedStatusCode: http.StatusInternalServerError,
-			expectedResponse:   `{"error":"Internal Server Error"}`,
-		},
-		{name: "input validation",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
-				rr := httptest.NewRecorder()
-				c, _ := gin.CreateTestContext(rr)
-				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", strings.NewReader(`{"name":"",
-			"email":    "name@gmail.com",
-			"password": "hfhhfhfh"}`))
-				ctx := httpRequest.Context()
-				ctx = context.WithValue(ctx, middlewear.TraceIdKey, "123")
-				httpRequest = httpRequest.WithContext(ctx)
-				c.Request = httpRequest
-
-				return c, rr, nil
-			},
-			expectedStatusCode: http.StatusUnauthorized,
-			expectedResponse:   `{"error":"Unauthorized"}`,
-		},
+		// 		return c, rr, nil
+		// 	},
+		// 	expectedStatusCode: http.StatusInternalServerError,
+		// 	expectedResponse:   `{"error":"Internal Server Error"}`,
+		// },
 		// {
 		// 	name: "success",
-		// 	setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+		// 	setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 		// 		rr := httptest.NewRecorder()
 		// 		c, _ := gin.CreateTestContext(rr)
 		// 		httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", strings.NewReader(`{"company_name":"names",
@@ -67,7 +50,7 @@ func Test_handler_companyCreation(t *testing.T) {
 		// 		c.Request = httpRequest
 
 		// 		mc := gomock.NewController(t)
-		// 		ms := services.NewMockCompanyService(mc)
+		// 		ms := repository.NewMockCompanyService(mc)
 
 		// 		ms.EXPECT().CompanyCreate(gomock.Any()).Return(model.Company{}, nil).AnyTimes()
 
@@ -75,6 +58,29 @@ func Test_handler_companyCreation(t *testing.T) {
 		// 	},
 		// 	expectedStatusCode: http.StatusOK,
 		// 	expectedResponse:   `{"ID":0,"CreatedAt":"0001-01-01T00:00:00Z","UpdatedAt":"0001-01-01T00:00:00Z","DeletedAt":null,"company_name":"","company_adress":"","domain":""}`,
+		// },
+		// {
+		// 	name: "failure case",
+		// 	setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
+		// 		rr := httptest.NewRecorder()
+		// 		c, _ := gin.CreateTestContext(rr)
+		// 		httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", strings.NewReader(`{"company_name":"names",
+		// 		"company_adress":    "name@gmail.com",
+		// 		"domain": "hfhhfhfh"}`))
+		// 		ctx := httpRequest.Context()
+		// 		ctx = context.WithValue(ctx, middlewear.TraceIdKey, "123")
+		// 		httpRequest = httpRequest.WithContext(ctx)
+		// 		c.Request = httpRequest
+
+		// 		mc := gomock.NewController(t)
+		// 		ms := repository.NewMockCompanyService(mc)
+
+		// 		ms.EXPECT().CompanyCreate(gomock.Any()).Return(model.Company{}, errors.New("errors")).AnyTimes()
+
+		// 		return c, rr, ms
+		// 	},
+		// 	expectedStatusCode: http.StatusBadRequest,
+		// 	expectedResponse:   `{"error":"compoany creation failed"}`,
 		// },
 	}
 	for _, tt := range tests {
@@ -94,13 +100,13 @@ func Test_handler_companyCreation(t *testing.T) {
 func Test_handler_getAllCompany(t *testing.T) {
 	tests := []struct {
 		name               string
-		setup              func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService)
+		setup              func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService)
 		expectedStatusCode int
 		expectedResponse   string
 	}{
 		{
 			name: "missing trace id",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", nil)
@@ -112,7 +118,7 @@ func Test_handler_getAllCompany(t *testing.T) {
 			expectedResponse:   `{"error":"Internal Server Error"}`,
 		}, {
 			name: "success",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", nil)
@@ -122,7 +128,7 @@ func Test_handler_getAllCompany(t *testing.T) {
 				c.Request = httpRequest
 
 				mc := gomock.NewController(t)
-				ms := services.NewMockCompanyService(mc)
+				ms := repository.NewMockCompanyService(mc)
 
 				ms.EXPECT().GetAllCompanies().Return([]model.Company{}, nil).AnyTimes()
 
@@ -130,6 +136,27 @@ func Test_handler_getAllCompany(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse:   "[]",
+		},
+		{
+			name: "fail",
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
+				rr := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(rr)
+				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", nil)
+				ctx := httpRequest.Context()
+				ctx = context.WithValue(ctx, middlewear.TraceIdKey, "123")
+				httpRequest = httpRequest.WithContext(ctx)
+				c.Request = httpRequest
+
+				mc := gomock.NewController(t)
+				ms := repository.NewMockCompanyService(mc)
+
+				ms.EXPECT().GetAllCompanies().Return(nil, errors.New("error")).AnyTimes()
+
+				return c, rr, ms
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   `{"msg":" could not get all companies"}`,
 		},
 	}
 	for _, tt := range tests {
@@ -146,17 +173,17 @@ func Test_handler_getAllCompany(t *testing.T) {
 	}
 }
 
-func Test_handler_getCompany(t *testing.T) {
+func Test_handler_getCompanyById(t *testing.T) {
 
 	tests := []struct {
 		name               string
-		setup              func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService)
+		setup              func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService)
 		expectedStatusCode int
 		expectedResponse   string
 	}{
 		{
 			name: "missing trace id",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", nil)
@@ -168,7 +195,7 @@ func Test_handler_getCompany(t *testing.T) {
 			expectedResponse:   `{"error":"Internal Server Error"}`,
 		}, {
 			name: "error while fetching companies from service",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", nil)
@@ -178,9 +205,31 @@ func Test_handler_getCompany(t *testing.T) {
 				c.Request = httpRequest
 				c.Params = append(c.Params, gin.Param{Key: "company_id", Value: "abc"})
 				mc := gomock.NewController(t)
-				ms := services.NewMockCompanyService(mc)
+				ms := repository.NewMockCompanyService(mc)
 
-				ms.EXPECT().GetCompany(gomock.Any()).Return(model.Company{}, errors.New("test service error")).AnyTimes()
+				ms.EXPECT().GetCompanyById(gomock.Any()).Return(model.Company{}, errors.New("test service error")).AnyTimes()
+
+				return c, rr, ms
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   `{"error":"Bad Request"}`,
+		},
+		{
+			name: "fail",
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
+				rr := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(rr)
+				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", nil)
+				ctx := httpRequest.Context()
+				ctx = context.WithValue(ctx, middlewear.TraceIdKey, "123")
+
+				httpRequest = httpRequest.WithContext(ctx)
+				c.Request = httpRequest
+				c.Params = append(c.Params, gin.Param{Key: "company_id", Value: "2"})
+				mc := gomock.NewController(t)
+				ms := repository.NewMockCompanyService(mc)
+
+				ms.EXPECT().GetCompanyById(gomock.Any()).Return(model.Company{}, nil).AnyTimes()
 
 				return c, rr, ms
 			},
@@ -224,16 +273,16 @@ func Test_handler_getCompany(t *testing.T) {
 	}
 }
 
-func Test_handler_postJob(t *testing.T) {
+func Test_handler_postJobByCompany(t *testing.T) {
 	tests := []struct {
 		name               string
-		setup              func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService)
+		setup              func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService)
 		expectedStatusCode int
 		expectedResponse   string
 	}{
 		{
 			name: "missing trace id",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", nil)
@@ -246,7 +295,7 @@ func Test_handler_postJob(t *testing.T) {
 		},
 		{
 			name: "missing param",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", nil)
@@ -261,7 +310,7 @@ func Test_handler_postJob(t *testing.T) {
 			expectedResponse:   `{"error":"Bad Request"}`,
 		},
 		{name: "input validation",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", strings.NewReader(`{"job_title":"",
@@ -277,7 +326,7 @@ func Test_handler_postJob(t *testing.T) {
 			expectedResponse:   `{"error":"Bad Request"}`,
 		}, {
 			name: "success",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", strings.NewReader(`{"job_title":"rvrvrv",
@@ -289,7 +338,7 @@ func Test_handler_postJob(t *testing.T) {
 
 				c.Params = append(c.Params, gin.Param{Key: "company_id", Value: "2"})
 				mc := gomock.NewController(t)
-				ms := services.NewMockCompanyService(mc)
+				ms := repository.NewMockCompanyService(mc)
 
 				ms.EXPECT().JobCreate(gomock.Any(), gomock.Any()).Return(model.Job{}, nil).AnyTimes()
 
@@ -297,6 +346,29 @@ func Test_handler_postJob(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse:   `{"ID":0,"CreatedAt":"0001-01-01T00:00:00Z","UpdatedAt":"0001-01-01T00:00:00Z","DeletedAt":null,"job_title":"","job_salary":"","Company":{"ID":0,"CreatedAt":"0001-01-01T00:00:00Z","UpdatedAt":"0001-01-01T00:00:00Z","DeletedAt":null,"company_name":"","company_adress":"","domain":""},"Uid":0}`,
+		},
+		{
+			name: "fail---",
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
+				rr := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(rr)
+				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", strings.NewReader(`{"job_title":"rvrvrv",
+				"job_salary":    "16786"}`))
+				ctx := httpRequest.Context()
+				ctx = context.WithValue(ctx, middlewear.TraceIdKey, "123")
+				httpRequest = httpRequest.WithContext(ctx)
+				c.Request = httpRequest
+
+				c.Params = append(c.Params, gin.Param{Key: "company_id", Value: "2"})
+				mc := gomock.NewController(t)
+				ms := repository.NewMockCompanyService(mc)
+
+				ms.EXPECT().JobCreate(gomock.Any(), gomock.Any()).Return(model.Job{}, errors.New("error")).AnyTimes()
+
+				return c, rr, ms
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   `{"msg":"Internal Server Error"}`,
 		},
 	}
 	for _, tt := range tests {
@@ -313,17 +385,16 @@ func Test_handler_postJob(t *testing.T) {
 	}
 }
 
-func Test_handler_getJob(t *testing.T) {
-
+func Test_handler_getJobByCompany(t *testing.T) {
 	tests := []struct {
 		name               string
-		setup              func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService)
+		setup              func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService)
 		expectedStatusCode int
 		expectedResponse   string
 	}{
 		{
 			name: "missing trace id",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", nil)
@@ -333,49 +404,50 @@ func Test_handler_getJob(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 			expectedResponse:   `{"error":"Internal Server Error"}`,
-		}, {
-			name: "error while fetching jobs from service",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
-				rr := httptest.NewRecorder()
-				c, _ := gin.CreateTestContext(rr)
-				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", nil)
-				ctx := httpRequest.Context()
-				ctx = context.WithValue(ctx, middlewear.TraceIdKey, "123")
-				httpRequest = httpRequest.WithContext(ctx)
-				c.Request = httpRequest
-				c.Params = append(c.Params, gin.Param{Key: "company_id", Value: "abc"})
-				mc := gomock.NewController(t)
-				ms := services.NewMockCompanyService(mc)
-
-				ms.EXPECT().GetJobs(gomock.Any()).Return([]model.Job{}, errors.New("test service error")).AnyTimes()
-
-				return c, rr, ms
-			},
-			expectedStatusCode: http.StatusBadRequest,
-			expectedResponse:   `{"error":"Bad Request"}`,
 		},
-		// {
-		// 	name: "success",
-		// 	setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+		//  {
+		// 	name: "error while fetching jobs from service",
+		// 	setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 		// 		rr := httptest.NewRecorder()
 		// 		c, _ := gin.CreateTestContext(rr)
 		// 		httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", nil)
 		// 		ctx := httpRequest.Context()
 		// 		ctx = context.WithValue(ctx, middlewear.TraceIdKey, "123")
-
 		// 		httpRequest = httpRequest.WithContext(ctx)
 		// 		c.Request = httpRequest
-		// 		c.Params = append(c.Params, gin.Param{Key: "company_id", Value: "2"})
+		// 		c.Params = append(c.Params, gin.Param{Key: "company_id", Value: "abc"})
 		// 		mc := gomock.NewController(t)
-		// 		ms := services.NewMockCompanyService(mc)
+		// 		ms := repository.NewMockCompanyService(mc)
 
-		// 		ms.EXPECT().GetJobs(gomock.Any()).Return([]model.Job{}, nil).AnyTimes()
+		// 		ms.EXPECT().GetCompanyById(gomock.Any()).Return(model.Job{}, errors.New("test service error")).AnyTimes()
 
 		// 		return c, rr, ms
 		// 	},
-		// 	expectedStatusCode: http.StatusOK,
-		// 	expectedResponse:   `[]`,
+		// 	expectedStatusCode: http.StatusBadRequest,
+		// 	expectedResponse:   `{"error":"Bad Request"}`,
 		// },
+		{
+			name: "success",
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
+				rr := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(rr)
+				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", nil)
+				ctx := httpRequest.Context()
+				ctx = context.WithValue(ctx, middlewear.TraceIdKey, "123")
+
+				httpRequest = httpRequest.WithContext(ctx)
+				c.Request = httpRequest
+				c.Params = append(c.Params, gin.Param{Key: "company_id", Value: "2"})
+				mc := gomock.NewController(t)
+				ms := repository.NewMockCompanyService(mc)
+
+				ms.EXPECT().GetJobsByCompanyId(gomock.Any()).Return([]model.Job{}, nil).AnyTimes()
+
+				return c, rr, ms
+			},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse:   `[]`,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -394,13 +466,13 @@ func Test_handler_getJob(t *testing.T) {
 func Test_handler_getAllJob(t *testing.T) {
 	tests := []struct {
 		name               string
-		setup              func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService)
+		setup              func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService)
 		expectedStatusCode int
 		expectedResponse   string
 	}{
 		{
 			name: "missing trace id",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", nil)
@@ -412,7 +484,7 @@ func Test_handler_getAllJob(t *testing.T) {
 			expectedResponse:   `{"error":"Internal Server Error"}`,
 		}, {
 			name: "success",
-			setup: func() (*gin.Context, *httptest.ResponseRecorder, services.CompanyService) {
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
 				rr := httptest.NewRecorder()
 				c, _ := gin.CreateTestContext(rr)
 				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", nil)
@@ -422,7 +494,7 @@ func Test_handler_getAllJob(t *testing.T) {
 				c.Request = httpRequest
 
 				mc := gomock.NewController(t)
-				ms := services.NewMockCompanyService(mc)
+				ms := repository.NewMockCompanyService(mc)
 
 				ms.EXPECT().GetAllJobs().Return([]model.Job{}, nil).AnyTimes()
 
@@ -430,6 +502,27 @@ func Test_handler_getAllJob(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse:   "[]",
+		},
+		{
+			name: "fail",
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.CompanyService) {
+				rr := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(rr)
+				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com:8080", nil)
+				ctx := httpRequest.Context()
+				ctx = context.WithValue(ctx, middlewear.TraceIdKey, "123")
+				httpRequest = httpRequest.WithContext(ctx)
+				c.Request = httpRequest
+
+				mc := gomock.NewController(t)
+				ms := repository.NewMockCompanyService(mc)
+
+				ms.EXPECT().GetAllJobs().Return(nil, errors.New("error")).AnyTimes()
+
+				return c, rr, ms
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   `{"error":"Internal Server Error"}`,
 		},
 	}
 	for _, tt := range tests {

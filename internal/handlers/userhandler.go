@@ -7,7 +7,7 @@ import (
 	"project/internal/auth"
 	"project/internal/middlewear"
 	"project/internal/model"
-	"project/internal/services"
+	"project/internal/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -16,11 +16,11 @@ import (
 
 type handler struct {
 	a  *auth.Auth
-	us services.UsersService
-	cs services.CompanyService
+	us repository.UsersService
+	cs repository.CompanyService
 }
 
-func NewHandler(a *auth.Auth, us services.UsersService, cs services.CompanyService) (*handler, error) {
+func NewHandler(a *auth.Auth, us repository.UsersService, cs repository.CompanyService) (*handler, error) {
 	if us == nil {
 		return nil, errors.New("service implementation not given")
 	}
