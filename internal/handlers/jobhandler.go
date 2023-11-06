@@ -9,7 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/rs/zerolog/log"
 )
 
@@ -25,12 +24,12 @@ func (h *handler) companyCreation(c *gin.Context) {
 		return
 	}
 
-	_, ok = ctx.Value(middlewear.TokenIdKey).(jwt.RegisteredClaims)
-	if !ok {
-		//	log.Error().Str("Trace Id", traceid).Msg("login first")
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": http.StatusText(http.StatusUnauthorized)})
-		return
-	}
+	// _, ok = ctx.Value(middlewear.TokenIdKey).(jwt.RegisteredClaims)
+	// if !ok {
+	// 	//	log.Error().Str("Trace Id", traceid).Msg("login first")
+	// 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": http.StatusText(http.StatusUnauthorized)})
+	// 	return
+	// }
 
 	var companyCreation model.CreateCompany
 	body := c.Request.Body

@@ -36,7 +36,8 @@ func Test_handler_userSignup(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 			expectedResponse:   `{"error":"Internal Server Error"}`,
-		}, {
+		},
+		{
 			name: "validate request body",
 			setup: func() (*gin.Context, *httptest.ResponseRecorder, repository.UsersService) {
 				rr := httptest.NewRecorder()
