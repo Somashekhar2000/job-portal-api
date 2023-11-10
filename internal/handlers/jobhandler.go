@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"project/internal/middlewear"
 	"project/internal/model"
@@ -120,15 +121,17 @@ func (h *handler) postJobByCompany(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
 		return
 	}
-	var jobCreation model.CreateJob
+	fmt.Println("==========================")
+	var jobCreation model.NewJobRequest
 	body := c.Request.Body
 	err := json.NewDecoder(body).Decode(&jobCreation)
 	if err != nil {
+		fmt.Println("---------------------------")
 		log.Error().Err(err).Msg("error in decoding")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
 		return
 	}
-
+	fmt.Println("8888888888888888888888")
 	validate := validator.New()
 	err = validate.Struct(&jobCreation)
 	if err != nil {
@@ -176,19 +179,19 @@ func (h *handler) getAllJob(c *gin.Context) {
 	traceId, ok := ctx.Value(middlewear.TraceIdKey).(string)
 	if !ok {
 		log.Error().Str("traceId", traceId).Msg("trace id not found in handler")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error in trace Id": http.StatusText(http.StatusInternalServerError)})
 		return
 	}
 
 	us, err := h.cs.GetAllJobs()
 	if err != nil {
 		log.Error().Err(err).Str("Trace Id", traceId).Msg("geting all jobs problem from db")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error in getall jobs": http.StatusText(http.StatusInternalServerError)})
 		return
 	}
 	c.JSON(http.StatusOK, us)
-
 }
+
 func (h *handler) getJobByJobId(c *gin.Context) {
 	ctx := c.Request.Context()
 	traceId, ok := ctx.Value(middlewear.TraceIdKey).(string)
@@ -210,4 +213,34 @@ func (h *handler) getJobByJobId(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, us)
+}
+
+func (h *handler) processApplications(c *gin.Context) {
+	ctx := c.Request.Context()
+	traceId, ok := ctx.Value(middlewear.TraceIdKey).(string)
+	if !ok {
+		log.Error().Str("traceId", traceId).Msg("trace id not found ")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"msg": http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+
+	var appData []model.NewUserApplication
+
+	err := json.NewDecoder(c.Request.Body).Decode(&appData)
+
+	if err != nil {
+		log.Error().Err(err).Str("trace id", traceId)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "please provide proper data"})
+		return
+	}
+
+	a, err := h.cs.ProcessJobApplications(appData)
+	if err != nil {
+		log.Error().Err(err).Str("trace id", traceId)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, a)
+
 }

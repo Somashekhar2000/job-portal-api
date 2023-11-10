@@ -10,7 +10,7 @@ import (
 	"project/internal/repository"
 	"project/internal/services"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt"
 	"github.com/rs/zerolog/log"
 )
 
@@ -35,7 +35,7 @@ func startApp() error {
 	log.Info().Msg("Starting job portal application")
 
 	// Load the private RSA key from a file.
-	privatePEM, err := os.ReadFile(`C:\Users\ORR Training 3\Desktop\job-portal-api\private.pem`)
+	privatePEM, err := os.ReadFile(`C:\Users\ORR Training 3\Desktop\job-portal-app-api\job-portal-api\private.pem`)
 	if err != nil {
 		return fmt.Errorf("failed to load private.pem file: %w", err)
 	}
@@ -45,7 +45,7 @@ func startApp() error {
 	}
 
 	// Load the public RSA key from a file.
-	publicPEM, err := os.ReadFile(`C:\Users\ORR Training 3\Desktop\job-portal-api\pubkey.pem`)
+	publicPEM, err := os.ReadFile(`C:\Users\ORR Training 3\Desktop\job-portal-app-api\job-portal-api\pubkey.pem`)
 	if err != nil {
 		return fmt.Errorf("failed to load pubkey.pem file: %w", err)
 	}

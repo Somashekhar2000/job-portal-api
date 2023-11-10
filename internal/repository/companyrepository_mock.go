@@ -53,19 +53,19 @@ func (mr *MockCompanyMockRecorder) CreateCompany(company any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCompany", reflect.TypeOf((*MockCompany)(nil).CreateCompany), company)
 }
 
-// CreateJob mocks base method.
-func (m *MockCompany) CreateJob(job model.Job) (model.Job, error) {
+// FetchJobData mocks base method.
+func (m *MockCompany) FetchJobData(jid uint64) (model.Job, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateJob", job)
+	ret := m.ctrl.Call(m, "FetchJobData", jid)
 	ret0, _ := ret[0].(model.Job)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateJob indicates an expected call of CreateJob.
-func (mr *MockCompanyMockRecorder) CreateJob(job any) *gomock.Call {
+// FetchJobData indicates an expected call of FetchJobData.
+func (mr *MockCompanyMockRecorder) FetchJobData(jid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateJob", reflect.TypeOf((*MockCompany)(nil).CreateJob), job)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchJobData", reflect.TypeOf((*MockCompany)(nil).FetchJobData), jid)
 }
 
 // GetAllCompany mocks base method.
@@ -141,4 +141,19 @@ func (m *MockCompany) GetJobsByJobId(jobID int) (model.Job, error) {
 func (mr *MockCompanyMockRecorder) GetJobsByJobId(jobID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetJobsByJobId", reflect.TypeOf((*MockCompany)(nil).GetJobsByJobId), jobID)
+}
+
+// PostJob mocks base method.
+func (m *MockCompany) PostJob(nj model.Job) (model.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PostJob", nj)
+	ret0, _ := ret[0].(model.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PostJob indicates an expected call of PostJob.
+func (mr *MockCompanyMockRecorder) PostJob(nj any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostJob", reflect.TypeOf((*MockCompany)(nil).PostJob), nj)
 }

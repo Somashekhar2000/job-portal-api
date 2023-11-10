@@ -34,6 +34,7 @@ func API(authService *auth.Auth, service *services.Service) *gin.Engine {
 	router.GET("/api/companies/:company_id/jobs", middleware.Auth(handler.getJobByCompany))
 	router.GET("/api/jobs", middleware.Auth(handler.getAllJob))
 	router.GET("/api/jobs/:job_id", middleware.Auth(handler.getJobByJobId))
+	router.POST("/api/applications", middleware.Auth(handler.processApplications))
 
 	return router
 }
