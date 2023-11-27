@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  job-portal:
+    container_name: job-portal
+    image: job-portal-api
+    ports:
+      - 8080:8081
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+  postgres:
+    container_name: postgres
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=jobportalrestapi
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 6379:6379

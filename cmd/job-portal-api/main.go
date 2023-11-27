@@ -1,90 +1,166 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"job-portal-api/config"
+	"job-portal-api/internal/authentication"
+	"job-portal-api/internal/cache"
+	"job-portal-api/internal/database"
+	"job-portal-api/internal/handler"
+	"job-portal-api/internal/repository"
+	"job-portal-api/internal/service"
 	"net/http"
 	"os"
-	"project/internal/auth"
-	"project/internal/database"
-	"project/internal/handlers"
-	"project/internal/repository"
-	"project/internal/services"
+	"os/signal"
+	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/rs/zerolog/log"
 )
 
-// ===================main()===============================
 func main() {
-
-	// starting the application.
-	err := startApp()
-
-	// Check if there was an error while starting the application.
+	err := StartApp()
 	if err != nil {
-		// Log a panic and include the error details if an error occurred.
 		log.Panic().Err(err).Send()
 	}
-
+	log.Info().Msg("Heloo this is our job-portal-app")
 }
 
-// =============================startApp()============================
-func startApp() error {
+func StartApp() error {
 
-	// Log that the application has started.
-	log.Info().Msg("Starting job portal application")
+	cfg := config.GetConfig()
 
-	// Load the private RSA key from a file.
-	privatePEM, err := os.ReadFile(`C:\Users\ORR Training 3\Desktop\job-portal-app-api\job-portal-api\private.pem`)
-	if err != nil {
-		return fmt.Errorf("failed to load private.pem file: %w", err)
-	}
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privatePEM)
-	if err != nil {
-		return fmt.Errorf("failed to parse private key from bytes: %w", err)
-	}
+	log.Info().Interface("cfg", cfg).Msg("config")
 
-	// Load the public RSA key from a file.
-	publicPEM, err := os.ReadFile(`C:\Users\ORR Training 3\Desktop\job-portal-app-api\job-portal-api\pubkey.pem`)
+	//initializing authentication support
+	log.Info().Msg("main started : initializing with the authentication support")
+
+	//reading private key file
+	privatePemFile, err := os.ReadFile(`private.pem`)
 	if err != nil {
-		return fmt.Errorf("failed to load pubkey.pem file: %w", err)
+		log.Info().Msg("Error in reading private Key file")
+		return fmt.Errorf("error in reading private key file : %w", err)
 	}
 
-	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicPEM)
+	//parsing private pem filr content to rsa private key
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privatePemFile)
 	if err != nil {
-		return fmt.Errorf("failed to parse public key from bytes: %w", err)
+		log.Info().Msg("Error in reading private Key")
+		return fmt.Errorf("error in parsing private key : %w", err)
 	}
 
-	// Create an authentication instance using the loaded keys.
-	authInstance, err := auth.NewAuth(privateKey, publicKey)
+	//reading public key file
+	publicPemFile, err := os.ReadFile(`pubkey.pem`)
 	if err != nil {
-		return fmt.Errorf("failed to create authentication instance: %w", err)
+		log.Info().Msg("Error in reading public Key filer")
+		return fmt.Errorf("error in reading public key file : %w", err)
 	}
 
-	// Establish a connection to the database.
-	db, err := database.Connection()
+	//parsing public pem file content to rsa public key
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicPemFile)
 	if err != nil {
-		return fmt.Errorf("failed to connect to the database: %w", err)
+		log.Info().Msg("error in parsing public key")
+		return fmt.Errorf("error in paring public key")
 	}
 
-	// Initialize a repository with the database connection.
-	repo, err := repository.NewRepo(db)
+	//callig factory function to get authentication
+	auth, err := authentication.NewAuth(privateKey, publicKey)
 	if err != nil {
-		return fmt.Errorf("failed to initialize repository: %w", err)
+		log.Info().Msg("error in auth function ")
+		return fmt.Errorf("error in auth function : %w", err)
 	}
 
-	// Create a service instance using the repository.
-	serviceInstance, err := services.NewService(repo, repo)
+	//starting with dtatbase connection
+	log.Info().Msg("main started : initializing the database")
+
+	db, err := database.DatabaseConnection()
 	if err != nil {
-		return fmt.Errorf("failed to create service instance: %w", err)
+		log.Info().Msg("error while opening data base connection")
+		return fmt.Errorf("error while opening data base connection : %w", err)
 	}
 
-	// Configure and start the HTTP server.
+	//initializing the repo layer
+	userRepo, err := repository.NewUserRepo(db)
+	if err != nil {
+		log.Info().Msg("error while initializing the user repository")
+		return err
+	}
+
+	companyRepo, err := repository.NewCompanyRepo(db)
+	if err != nil {
+		log.Info().Msg("error while initializing the company repository")
+		return err
+	}
+
+	jobRepo, err := repository.NewJobRepo(db)
+	if err != nil {
+		log.Info().Msg("error while initializing the job repository")
+		return err
+	}
+
+	userService, err := service.NewUserService(userRepo, auth)
+	if err != nil {
+		log.Info().Msg("error while initializing user service")
+		return fmt.Errorf("error while initializing uservservice : %w", err)
+	}
+
+	companyService, err := service.NewCompanyService(companyRepo)
+	if err != nil {
+		log.Info().Msg("error while initializing company service")
+		return fmt.Errorf("error while initializing company service : %w", err)
+	}
+
+	redis := database.ConnectToRedis()
+
+	rdb, err := cache.NewRDBLayer(redis)
+	if err != nil {
+		log.Info().Msg("error while initializing redis service")
+		return fmt.Errorf("error while initializing redis service : %w", err)
+	}
+
+	jobService, err := service.NewJobService(jobRepo, rdb)
+	if err != nil {
+		log.Info().Msg("error while initializing job service")
+		return fmt.Errorf("error while initializing job service : %w", err)
+	}
+
+	//initilazing http server
 	api := http.Server{
-		Addr:    ":8085",
-		Handler: handlers.API(authInstance, serviceInstance),
+		Addr:         ":8080",
+		ReadTimeout:  8000 * time.Second,
+		WriteTimeout: 800 * time.Second,
+		IdleTimeout:  800 * time.Second,
+		Handler:      handler.SetupApi(auth, userService, companyService, jobService),
 	}
-	api.ListenAndServe()
+
+	serverErrors := make(chan error, 1)
+
+	go func() {
+		log.Info().Str("port", api.Addr).Msg("main started : api is listening")
+		serverErrors <- api.ListenAndServe()
+	}()
+
+	shutdown := make(chan os.Signal, 1)
+
+	signal.Notify(shutdown, os.Interrupt)
+
+	select {
+	case err := <-serverErrors:
+		return fmt.Errorf("server error : %w", err)
+
+	case sig := <-shutdown:
+		log.Info().Msgf("main: start shutdown %s", sig)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		err := api.Shutdown(ctx)
+		if err != nil {
+			err := api.Close()
+			return fmt.Errorf("could not stop server gracefully : %w", err)
+		}
+
+	}
 
 	return nil
 
