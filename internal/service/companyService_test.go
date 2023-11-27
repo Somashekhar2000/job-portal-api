@@ -15,28 +15,28 @@ func TestService_AddingCompany(t *testing.T) {
 		company model.AddCompany
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    model.Company
-		wantErr bool
-		mockUserResponse func()(model.Company,error)
+		name             string
+		args             args
+		want             model.Company
+		wantErr          bool
+		mockUserResponse func() (model.Company, error)
 	}{
 		{
-			name: "failure",
-			args: args{company: model.AddCompany{}},
-			want: model.Company{},
+			name:    "failure",
+			args:    args{company: model.AddCompany{}},
+			want:    model.Company{},
 			wantErr: true,
 			mockUserResponse: func() (model.Company, error) {
-				return model.Company{},errors.New("error")
+				return model.Company{}, errors.New("error")
 			},
 		},
 		{
-			name: "success",
-			args: args{company: model.AddCompany{CompanyName: "wertyu",Address: "qwertyui",Domain: "wertyui"}},
-			want: model.Company{CompanyName: "wertyu",Address: "qwertyui",Domain: "wertyui"},
+			name:    "success",
+			args:    args{company: model.AddCompany{CompanyName: "wertyu", Address: "qwertyui", Domain: "wertyui"}},
+			want:    model.Company{CompanyName: "wertyu", Address: "qwertyui", Domain: "wertyui"},
 			wantErr: false,
 			mockUserResponse: func() (model.Company, error) {
-				return model.Company{CompanyName: "wertyu",Address: "qwertyui",Domain: "wertyui"},nil
+				return model.Company{CompanyName: "wertyu", Address: "qwertyui", Domain: "wertyui"}, nil
 			},
 		},
 	}
@@ -44,7 +44,7 @@ func TestService_AddingCompany(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			ms := repository.NewMockComapnyRepo(mc)
-			s,_:=NewCompanyService(ms)
+			s, _ := NewCompanyService(ms)
 			if tt.mockUserResponse != nil {
 				ms.EXPECT().CreateComapny(gomock.Any()).Return(tt.mockUserResponse()).AnyTimes()
 			}
@@ -62,25 +62,25 @@ func TestService_AddingCompany(t *testing.T) {
 
 func TestService_ViewAllCompanies(t *testing.T) {
 	tests := []struct {
-		name    string
-		want    []model.Company
-		wantErr bool
-		mockUserResponse func()([]model.Company,error)
+		name             string
+		want             []model.Company
+		wantErr          bool
+		mockUserResponse func() ([]model.Company, error)
 	}{
 		{
-			name: "failure",
-			want: nil,
+			name:    "failure",
+			want:    nil,
 			wantErr: true,
 			mockUserResponse: func() ([]model.Company, error) {
-				return nil,errors.New("error")
+				return nil, errors.New("error")
 			},
 		},
 		{
-			name: "success",
-			want: []model.Company{},
+			name:    "success",
+			want:    []model.Company{},
 			wantErr: false,
 			mockUserResponse: func() ([]model.Company, error) {
-				return []model.Company{},nil
+				return []model.Company{}, nil
 			},
 		},
 	}
@@ -88,7 +88,7 @@ func TestService_ViewAllCompanies(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			ms := repository.NewMockComapnyRepo(mc)
-			s,_:=NewCompanyService(ms)
+			s, _ := NewCompanyService(ms)
 			if tt.mockUserResponse != nil {
 				ms.EXPECT().GetAllCompanies().Return(tt.mockUserResponse()).AnyTimes()
 			}
@@ -109,28 +109,28 @@ func TestService_ViewCompanyById(t *testing.T) {
 		cId uint64
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    model.Company
-		wantErr bool
-		mockUserResponse func()(model.Company,error)
+		name             string
+		args             args
+		want             model.Company
+		wantErr          bool
+		mockUserResponse func() (model.Company, error)
 	}{
 		{
-			name: "failure",
-			args: args{cId: 0},
-			want: model.Company{},
+			name:    "failure",
+			args:    args{cId: 0},
+			want:    model.Company{},
 			wantErr: true,
 			mockUserResponse: func() (model.Company, error) {
-				return model.Company{},errors.New("error")
+				return model.Company{}, errors.New("error")
 			},
 		},
 		{
-			name: "success",
-			args: args{cId: 1},
-			want: model.Company{},
+			name:    "success",
+			args:    args{cId: 1},
+			want:    model.Company{},
 			wantErr: false,
 			mockUserResponse: func() (model.Company, error) {
-				return model.Company{},nil
+				return model.Company{}, nil
 			},
 		},
 	}
@@ -138,7 +138,7 @@ func TestService_ViewCompanyById(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			ms := repository.NewMockComapnyRepo(mc)
-			s,_:=NewCompanyService(ms)
+			s, _ := NewCompanyService(ms)
 			if tt.mockUserResponse != nil {
 				ms.EXPECT().GetCompanyByID(gomock.Any()).Return(tt.mockUserResponse()).AnyTimes()
 			}
