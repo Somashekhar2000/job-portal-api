@@ -19,3 +19,8 @@ type UserLogin struct {
 	EmailID  string `json:"emailID" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
+
+type ChangePassword struct {
+	EmailID string `json:"emailID" validate:"required"`
+	DOB     string `json:"dob"`
+}

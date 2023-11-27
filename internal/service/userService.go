@@ -16,6 +16,7 @@ import (
 type UserService interface {
 	UserSignup(userSignup model.UserSignup) (model.User, error)
 	Userlogin(userSignin model.UserLogin) (string, error)
+	otpGeneration(userdetails model.ChangePassword) (string, error)
 }
 
 func NewUserService(userRepo repository.UserRepository, a authentication.Authenticaton) (UserService, error) {
@@ -75,4 +76,12 @@ func (s *Service) Userlogin(userSignin model.UserLogin) (string, error) {
 	}
 
 	return token, nil
+}
+
+func (s *Service) otpGeneration(userdetails model.ChangePassword) (string, error) {
+	userData, err := s.userRepo.CheckUser(userdetails.EmailID)
+	if err != nil {
+		return "", err
+	}
+
 }

@@ -127,7 +127,7 @@ func StartApp() error {
 
 	//initilazing http server
 	api := http.Server{
-		Addr:         ":8080",
+		Addr:         fmt.Sprintf(":%s", cfg.AppConfig.Port),
 		ReadTimeout:  8000 * time.Second,
 		WriteTimeout: 800 * time.Second,
 		IdleTimeout:  800 * time.Second,

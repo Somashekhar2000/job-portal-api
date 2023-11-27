@@ -29,3 +29,7 @@ func CheckingHashPassword(password string, hashedPassword string) error {
 	}
 	return nil
 }
+
+func OTPGeneration() int {
+
+}

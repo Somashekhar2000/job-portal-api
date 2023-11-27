@@ -9,18 +9,18 @@ import (
 var cfg Config
 
 type Config struct {
-	AppConfig
+	AppConfig AppConfig
 }
 
 type AppConfig struct {
-	Port int `env:"APP_PORT,required=true"`
+	Port string `env:"APP_PORT,required=true"`
 }
 
 func init() {
 
 	_, err := env.UnmarshalFromEnviron(&cfg)
 	if err != nil {
-		log.Println("=========================", err)
+		log.Panic(err)
 	}
 }
 
