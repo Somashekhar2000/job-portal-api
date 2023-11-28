@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"job-portal-api/internal/authentication"
 	"job-portal-api/internal/middleware"
 	"job-portal-api/internal/model"
 	"job-portal-api/internal/service"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/rs/zerolog/log"
 )
 
@@ -111,23 +109,17 @@ func (h *Handler) GeneratingOTP(c *gin.Context) {
 
 	traceID, ok := ctx.Value(middleware.TraceIDKey).(string)
 	if !ok {
-		log.Error().Err(errors.New("missing trace id"))
+		log.Error().Err(errors.New("missing trace id")).Msg("-----------------")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
 		return
 	}
 
-	_, ok = ctx.Value(authentication.AuthKey).(jwt.RegisteredClaims)
-	if !ok {
-		log.Error().Err(errors.New("jwt claims misiing"))
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
-		return
-	}
 
 	var forgotPassword model.ChangePassword
 
 	 err := json.NewDecoder(c.Request.Body).Decode(&forgotPassword)
 	if err!= nil {
-		log.Err(err).Str("trace id :",traceID).Msg("error in decoding")
+		log.Err(err).Str("trace id :",traceID).Msg("error in decoding{{{{{{{{{{{{{}}}}}}}}}}}}}")
 		c.AbortWithStatusJSON(http.StatusBadRequest,gin.H{"error":http.StatusText(http.StatusBadRequest)})
 		return
 	}
@@ -141,5 +133,13 @@ func (h *Handler) GeneratingOTP(c *gin.Context) {
 		return
 	}
 
-	fghj,err := h.serviceUser.
+	otp,err := h.serviceUser.OTPGeneration(forgotPassword)
+	if err!=nil || otp=="" {
+		log.Error().Err(err).Msg("===============")
+		c.AbortWithStatusJSON(http.StatusBadRequest,gin.H{"error":http.StatusText(http.StatusBadRequest)})
+		return
+	}
+
+	c.JSON(http.StatusOK,otp)
+
 }

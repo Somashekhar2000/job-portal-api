@@ -3,6 +3,8 @@ package passwordhash
 import (
 	"errors"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
@@ -30,6 +32,7 @@ func CheckingHashPassword(password string, hashedPassword string) error {
 	return nil
 }
 
-func OTPGeneration() int {
-
+func OTPGeneration() string {
+	rand.Seed(time.Now().UnixNano())
+	return fmt.Sprintf("%v",rand.Intn(90000) + 10000)
 }

@@ -21,6 +21,7 @@ type RDBLayer struct {
 type Caching interface {
 	AddToTheCache(ctx context.Context, jID uint, jobData model.Job) error
 	GetTheCacheData(ctx context.Context, jID uint) (string, error)
+	AddOTP(ctx context.Context,otp string,emailID string)error
 }
 
 func NewRDBLayer(rdb *redis.Client) (Caching, error) {
@@ -48,4 +49,12 @@ func (r *RDBLayer) GetTheCacheData(ctx context.Context, jID uint) (string, error
 	jobId := strconv.FormatUint(uint64(jID), 10)
 	str, err := r.rdb.Get(ctx, jobId).Result()
 	return str, err
+}
+
+func (r *RDBLayer)AddOTP(ctx context.Context,otp string,emailID string)error{
+	err := r.rdb.Set(ctx,otp,emailID,5*time.Minute)
+	if err!= nil {
+		return errors.New("error in adding otpto redis")
+	}
+	return nil
 }
