@@ -6,9 +6,14 @@ services:
     image: job-portal-api
     ports:
       - 8080:8080
-    build: .
+    build:
+      context: .
+      dockerfile: dockerfile
     env_file:
       - .env
+      - .postgres.job.env
+      - .auth.env
+      - .redis.env
     depends_on:
       - postgres
       - redis
@@ -18,16 +23,10 @@ services:
     image: postgres
     ports:
       - 5432:5432
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=1234
-      - POSTGRES_DB=jobportalrestapi
+    env_file:
+      - .postgres.env
   redis:
     container_name: redis
     image: redis
     ports:
       - 6379:6379
-    environment:
-      - Addr=redis
-      - Password=""
-      - DB=0

@@ -31,19 +31,20 @@ func StartApp() error {
 
 	cfg := config.GetConfig()
 
-	log.Info().Interface("cfg", cfg).Msg("config")
+	// log.Info().Interface("cfg", cfg).Msg("config")
 
 	//initializing authentication support
 	log.Info().Msg("main started : initializing with the authentication support")
 
 	//reading private key file
-	privatePemFile, err := os.ReadFile(`private.pem`)
-	if err != nil {
-		log.Info().Msg("Error in reading private Key file")
-		return fmt.Errorf("error in reading private key file : %w", err)
-	}
+	// privatePemFile, err := os.ReadFile(`private.pem`)
+	// if err != nil {
+	// 	log.Info().Msg("Error in reading private Key file")
+	// 	return fmt.Errorf("error in reading private key file : %w", err)
+	// }
 
 	//parsing private pem filr content to rsa private key
+	privatePemFile := []byte(cfg.AuthConfig.PrivateKey)
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privatePemFile)
 	if err != nil {
 		log.Info().Msg("Error in reading private Key")
@@ -51,13 +52,14 @@ func StartApp() error {
 	}
 
 	//reading public key file
-	publicPemFile, err := os.ReadFile(`pubkey.pem`)
-	if err != nil {
-		log.Info().Msg("Error in reading public Key filer")
-		return fmt.Errorf("error in reading public key file : %w", err)
-	}
+	// publicPemFile, err := os.ReadFile(`pubkey.pem`)
+	// if err != nil {
+	// 	log.Info().Msg("Error in reading public Key filer")
+	// 	return fmt.Errorf("error in reading public key file : %w", err)
+	// }
 
 	//parsing public pem file content to rsa public key
+	publicPemFile := []byte(cfg.AuthConfig.PublicKey)
 	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicPemFile)
 	if err != nil {
 		log.Info().Msg("error in parsing public key")
@@ -128,9 +130,9 @@ func StartApp() error {
 	//initilazing http server
 	api := http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.AppConfig.Port),
-		ReadTimeout:  8000 * time.Second,
-		WriteTimeout: 800 * time.Second,
-		IdleTimeout:  800 * time.Second,
+		ReadTimeout:  time.Duration(cfg.AppConfig.ReadTimeOut) * time.Second,
+		WriteTimeout: time.Duration(cfg.AppConfig.WriteTimeOut) * time.Second,
+		IdleTimeout:  time.Duration(cfg.AppConfig.IdleTimeout) * time.Second,
 		Handler:      handler.SetupApi(auth, userService, companyService, jobService),
 	}
 
