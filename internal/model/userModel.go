@@ -24,3 +24,10 @@ type ChangePassword struct {
 	EmailID string `json:"emailID" validate:"required"`
 	DOB     string `json:"dob"`
 }
+
+type OTPVerification struct {
+	EmailID          string `json:"emailID" validate:"required"`
+	OTP              string `json:"otp" validate:"required"`
+	NewPassword      string `json:"new_password" validate:"required"`
+	ConfirmPasswrord string `json:"confirm_password" validate:"required"`
+}

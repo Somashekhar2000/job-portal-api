@@ -60,6 +60,7 @@ func SetupApi(auth authentication.Authenticaton, userService service.UserService
 	router.GET("/api/process_application", mid.Authentication(jobHandler.ProcessJobApplication))
 
 	router.POST("/api/otp_genereation", userHandler.GeneratingOTP)
+	router.POST("/api/verify_otp", userHandler.VerifyOTP)
 
 	return router
 }

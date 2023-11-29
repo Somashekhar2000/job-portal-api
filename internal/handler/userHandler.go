@@ -18,6 +18,7 @@ type UserHandler interface {
 	Signup(c *gin.Context)
 	login(c *gin.Context)
 	GeneratingOTP(c *gin.Context)
+	VerifyOTP(c *gin.Context)
 }
 
 func NewUserHandler(serviceUser service.UserService) (UserHandler, error) {
@@ -114,32 +115,70 @@ func (h *Handler) GeneratingOTP(c *gin.Context) {
 		return
 	}
 
-
 	var forgotPassword model.ChangePassword
 
-	 err := json.NewDecoder(c.Request.Body).Decode(&forgotPassword)
-	if err!= nil {
-		log.Err(err).Str("trace id :",traceID).Msg("error in decoding{{{{{{{{{{{{{}}}}}}}}}}}}}")
-		c.AbortWithStatusJSON(http.StatusBadRequest,gin.H{"error":http.StatusText(http.StatusBadRequest)})
+	err := json.NewDecoder(c.Request.Body).Decode(&forgotPassword)
+	if err != nil {
+		log.Err(err).Str("trace id :", traceID).Msg("error in decoding{{{{{{{{{{{{{}}}}}}}}}}}}}")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
 		return
 	}
 
 	validate := validator.New()
 
 	err = validate.Struct(&forgotPassword)
-	if err!=nil{
-		log.Err(err).Str("trace id :",traceID).Msg("error in validating")
-		c.AbortWithStatusJSON(http.StatusBadRequest,gin.H{"error":http.StatusText(http.StatusBadRequest)})
+	if err != nil {
+		log.Err(err).Str("trace id :", traceID).Msg("error in validating")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
 		return
 	}
 
-	otp,err := h.serviceUser.OTPGeneration(forgotPassword)
-	if err!=nil || otp=="" {
+	otp, err := h.serviceUser.OTPGeneration(forgotPassword)
+	if err != nil || otp == "" {
 		log.Error().Err(err).Msg("===============")
-		c.AbortWithStatusJSON(http.StatusBadRequest,gin.H{"error":http.StatusText(http.StatusBadRequest)})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
 		return
 	}
 
-	c.JSON(http.StatusOK,otp)
+	c.JSON(http.StatusOK, otp)
 
+}
+
+func (h *Handler) VerifyOTP(c *gin.Context) {
+
+	ctx := c.Request.Context()
+
+	traceID, ok := ctx.Value(middleware.TraceIDKey).(string)
+	if !ok {
+		log.Err(errors.New("missing trace id")).Msg("add the missing trace id")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+
+	var userData model.OTPVerification
+
+	err := json.NewDecoder(c.Request.Body).Decode(&userData)
+	if err != nil {
+		log.Err(err).Str("trace id :", traceID).Msg("error in decoding the json body")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
+		return
+	}
+
+	validate := validator.New()
+
+	err = validate.Struct(&userData)
+	if err != nil {
+		log.Err(err).Str("trace id :", traceID).Msg("error in validating the json body")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
+		return
+	}
+
+	err = h.serviceUser.ValidatingOTP(userData)
+	if err != nil {
+		log.Err(err).Str("trace id :", traceID).Msg("error validating otp")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"pass word reset ": " successful"})
 }

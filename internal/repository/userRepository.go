@@ -12,6 +12,7 @@ import (
 type UserRepository interface {
 	CreateUser(userData model.User) (model.User, error)
 	CheckUser(email string) (model.User, error)
+	UpdatePassword(userData model.User) error
 }
 
 func NewUserRepo(db *gorm.DB) (UserRepository, error) {
@@ -45,4 +46,13 @@ func (r *Repo) CheckUser(email string) (model.User, error) {
 	}
 
 	return userData, nil
+}
+
+func (r *Repo) UpdatePassword(userData model.User) error {
+	err := r.db.Save(&userData)
+	if err.Error != nil {
+		log.Err(err.Error).Msg("error in updating data to db")
+		return err.Error
+	}
+	return nil
 }

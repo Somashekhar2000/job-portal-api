@@ -13,9 +13,11 @@ func ConnectToRedis() *redis.Client {
 
 	PASS, _ := strconv.Atoi(cfg.RedisConfig.Db)
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s", cfg.RedisConfig.Address),
+		Addr:     cfg.RedisConfig.Address,
 		Password: cfg.RedisConfig.Password,
 		DB:       PASS,
 	})
+
+	fmt.Println("===============", rdb)
 	return rdb
 }

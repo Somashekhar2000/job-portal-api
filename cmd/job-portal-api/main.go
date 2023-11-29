@@ -82,6 +82,14 @@ func StartApp() error {
 		return fmt.Errorf("error while opening data base connection : %w", err)
 	}
 
+	redis := database.ConnectToRedis()
+
+	rdb, err := cache.NewRDBLayer(redis)
+	if err != nil {
+		log.Info().Msg("error while initializing redis service")
+		return fmt.Errorf("error while initializing redis service : %w", err)
+	}
+
 	//initializing the repo layer
 	userRepo, err := repository.NewUserRepo(db)
 	if err != nil {
@@ -101,7 +109,7 @@ func StartApp() error {
 		return err
 	}
 
-	userService, err := service.NewUserService(userRepo, auth)
+	userService, err := service.NewUserService(userRepo, auth, rdb)
 	if err != nil {
 		log.Info().Msg("error while initializing user service")
 		return fmt.Errorf("error while initializing uservservice : %w", err)
@@ -111,14 +119,6 @@ func StartApp() error {
 	if err != nil {
 		log.Info().Msg("error while initializing company service")
 		return fmt.Errorf("error while initializing company service : %w", err)
-	}
-
-	redis := database.ConnectToRedis()
-
-	rdb, err := cache.NewRDBLayer(redis)
-	if err != nil {
-		log.Info().Msg("error while initializing redis service")
-		return fmt.Errorf("error while initializing redis service : %w", err)
 	}
 
 	jobService, err := service.NewJobService(jobRepo, rdb)

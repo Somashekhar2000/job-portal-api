@@ -12,6 +12,7 @@ import (
 
 func HashingPassword(password string) (string, error) {
 	if password == "" {
+		log.Error().Msg("error : empty password ")
 		return "", errors.New("error in hashing password ")
 	}
 
@@ -34,5 +35,5 @@ func CheckingHashPassword(password string, hashedPassword string) error {
 
 func OTPGeneration() string {
 	rand.Seed(time.Now().UnixNano())
-	return fmt.Sprintf("%v",rand.Intn(90000) + 10000)
+	return fmt.Sprintf("%v", rand.Intn(90000)+10000)
 }
