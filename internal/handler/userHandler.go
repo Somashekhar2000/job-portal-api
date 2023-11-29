@@ -110,7 +110,7 @@ func (h *Handler) GeneratingOTP(c *gin.Context) {
 
 	traceID, ok := ctx.Value(middleware.TraceIDKey).(string)
 	if !ok {
-		log.Error().Err(errors.New("missing trace id")).Msg("-----------------")
+		log.Error().Err(errors.New("missing trace id")).Msg("error missing trace id")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
 		return
 	}
@@ -119,7 +119,7 @@ func (h *Handler) GeneratingOTP(c *gin.Context) {
 
 	err := json.NewDecoder(c.Request.Body).Decode(&forgotPassword)
 	if err != nil {
-		log.Err(err).Str("trace id :", traceID).Msg("error in decoding{{{{{{{{{{{{{}}}}}}}}}}}}}")
+		log.Err(err).Str("trace id :", traceID).Msg("error in decoding")
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
 		return
 	}

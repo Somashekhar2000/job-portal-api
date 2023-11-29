@@ -39,6 +39,20 @@ func (m *MockCaching) EXPECT() *MockCachingMockRecorder {
 	return m.recorder
 }
 
+// AddOTP mocks base method.
+func (m *MockCaching) AddOTP(ctx context.Context, otp, emailID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddOTP", ctx, otp, emailID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddOTP indicates an expected call of AddOTP.
+func (mr *MockCachingMockRecorder) AddOTP(ctx, otp, emailID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOTP", reflect.TypeOf((*MockCaching)(nil).AddOTP), ctx, otp, emailID)
+}
+
 // AddToTheCache mocks base method.
 func (m *MockCaching) AddToTheCache(ctx context.Context, jID uint, jobData model.Job) error {
 	m.ctrl.T.Helper()
@@ -51,6 +65,21 @@ func (m *MockCaching) AddToTheCache(ctx context.Context, jID uint, jobData model
 func (mr *MockCachingMockRecorder) AddToTheCache(ctx, jID, jobData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddToTheCache", reflect.TypeOf((*MockCaching)(nil).AddToTheCache), ctx, jID, jobData)
+}
+
+// GetOTP mocks base method.
+func (m *MockCaching) GetOTP(ctx context.Context, otp string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOTP", ctx, otp)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOTP indicates an expected call of GetOTP.
+func (mr *MockCachingMockRecorder) GetOTP(ctx, otp any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOTP", reflect.TypeOf((*MockCaching)(nil).GetOTP), ctx, otp)
 }
 
 // GetTheCacheData mocks base method.

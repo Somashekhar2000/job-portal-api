@@ -229,3 +229,71 @@ func TestHandler_login(t *testing.T) {
 		})
 	}
 }
+
+func TestHandler_GeneratingOTP(t *testing.T) {
+	tests := []struct {
+		name               string
+		setup              func() (*gin.Context, *httptest.ResponseRecorder, service.UserService)
+		expectedStatusCode int
+		expectedResponse   string
+	}{
+		{
+			name: "missing trace id",
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, service.UserService) {
+				hr := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(hr)
+				httpRequest, _ := http.NewRequest(http.MethodGet, "http://test.com", nil)
+				c.Request = httpRequest
+
+				return c, hr, nil
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   `{"error":"Internal Server Error"}`,
+		},
+		{name: "error in decoding",
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, service.UserService) {
+				rr := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(rr)
+				httpRequest, _ := http.NewRequest(http.MethodGet, "http://tests.com", strings.NewReader(`
+				{email":"soma@gmail.com","password":"1234"}`))
+				ctx := httpRequest.Context()
+				ctx = context.WithValue(ctx, middleware.TraceIDKey, "1")
+				httpRequest = httpRequest.WithContext(ctx)
+				c.Request = httpRequest
+				return c, rr, nil
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   `{"error":"Bad Request"}`,
+		},
+		{name: "error in validating",
+			setup: func() (*gin.Context, *httptest.ResponseRecorder, service.UserService) {
+				rr := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(rr)
+				httpRequest, _ := http.NewRequest(http.MethodGet, "http://tests.com", strings.NewReader(`
+				{
+					"EmailID":"somashekharsoma4159@gmail.com",
+					"DOB":""
+				}`))
+				ctx := httpRequest.Context()
+				ctx = context.WithValue(ctx, middleware.TraceIDKey, "1")
+				httpRequest = httpRequest.WithContext(ctx)
+				c.Request = httpRequest
+				return c, rr, nil
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   `{"error ":"Bad Request"}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gin.SetMode(gin.TestMode)
+			c, rr, ms := tt.setup()
+			h := Handler{
+				serviceUser: ms,
+			}
+			h.GeneratingOTP(c)
+			assert.Equal(t, tt.expectedStatusCode, rr.Code)
+			assert.Equal(t, tt.expectedResponse, rr.Body.String())
+		})
+	}
+}

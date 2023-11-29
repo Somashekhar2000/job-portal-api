@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"job-portal-api/internal/authentication"
+	"job-portal-api/internal/cache"
 	"job-portal-api/internal/model"
 	"job-portal-api/internal/repository"
 	"reflect"
@@ -55,7 +56,8 @@ func TestService_UserSignup(t *testing.T) {
 			mc := gomock.NewController(t)
 			ms := repository.NewMockUserRepository(mc)
 			ma := authentication.NewMockAuthenticaton(mc)
-			s, _ := NewUserService(ms, ma)
+			mca := cache.NewMockCaching(mc)
+			s, _ := NewUserService(ms, ma, mca)
 			if tt.mockUserResponse != nil {
 				ms.EXPECT().CreateUser(gomock.Any()).Return(tt.mockUserResponse()).AnyTimes()
 			}
@@ -147,7 +149,8 @@ func TestService_Userlogin(t *testing.T) {
 			mc := gomock.NewController(t)
 			ms := repository.NewMockUserRepository(mc)
 			ma := authentication.NewMockAuthenticaton(mc)
-			s, _ := NewUserService(ms, ma)
+			mca := cache.NewMockCaching(mc)
+			s, _ := NewUserService(ms, ma, mca)
 			if tt.mockUserResponse != nil {
 				ms.EXPECT().CheckUser(gomock.Any()).Return(tt.mockUserResponse()).AnyTimes()
 				ma.EXPECT().GenerateToken(gomock.Any()).Return(tt.mockAuth()).AnyTimes()
@@ -159,6 +162,78 @@ func TestService_Userlogin(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Service.UserSignup() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestService_OTPGeneration(t *testing.T) {
+	type args struct {
+		userdetails model.ChangePassword
+	}
+	tests := []struct {
+		name              string
+		args              args
+		want              string
+		wantErr           bool
+		mockUserResponse  func() (model.User, error)
+		mockCacheResponse func() error
+	}{
+		{
+			name:    "failure - 1",
+			args:    args{userdetails: model.ChangePassword{EmailID: "asdfghjk", DOB: "sdfghj"}},
+			want:    "",
+			wantErr: true,
+			mockUserResponse: func() (model.User, error) {
+				return model.User{}, errors.New("error")
+			},
+			mockCacheResponse: func() error {
+				return errors.New("error")
+			},
+		},
+		{
+			name:    "failure - 2",
+			args:    args{userdetails: model.ChangePassword{EmailID: "asdfghjk", DOB: "sdfghj"}},
+			want:    "",
+			wantErr: true,
+			mockUserResponse: func() (model.User, error) {
+				return model.User{}, nil
+			},
+			mockCacheResponse: func() error {
+				return errors.New("error")
+			},
+		},
+		{
+			name:    "success",
+			args:    args{userdetails: model.ChangePassword{EmailID: "asdfghjk", DOB: "sdfghj"}},
+			want:    "",
+			wantErr: false,
+			mockUserResponse: func() (model.User, error) {
+				return model.User{}, nil
+			},
+			mockCacheResponse: func() error {
+				return nil
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			ma := authentication.NewMockAuthenticaton(mc)
+			ms := repository.NewMockUserRepository(mc)
+			mca := cache.NewMockCaching(mc)
+			s, _ := NewUserService(ms, ma, mca)
+			if tt.mockUserResponse != nil {
+				ms.EXPECT().CheckUser(gomock.Any()).Return(tt.mockUserResponse()).AnyTimes()
+				mca.EXPECT().AddOTP(gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.mockCacheResponse()).AnyTimes()
+			}
+			got, err := s.OTPGeneration(tt.args.userdetails)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.OTPGeneration() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Service.OTPGeneration() = %v, want %v", got, tt.want)
 			}
 		})
 	}

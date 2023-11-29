@@ -38,6 +38,21 @@ func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 	return m.recorder
 }
 
+// OTPGeneration mocks base method.
+func (m *MockUserService) OTPGeneration(userdetails model.ChangePassword) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OTPGeneration", userdetails)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OTPGeneration indicates an expected call of OTPGeneration.
+func (mr *MockUserServiceMockRecorder) OTPGeneration(userdetails any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OTPGeneration", reflect.TypeOf((*MockUserService)(nil).OTPGeneration), userdetails)
+}
+
 // UserSignup mocks base method.
 func (m *MockUserService) UserSignup(userSignup model.UserSignup) (model.User, error) {
 	m.ctrl.T.Helper()
@@ -66,4 +81,18 @@ func (m *MockUserService) Userlogin(userSignin model.UserLogin) (string, error) 
 func (mr *MockUserServiceMockRecorder) Userlogin(userSignin any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Userlogin", reflect.TypeOf((*MockUserService)(nil).Userlogin), userSignin)
+}
+
+// ValidatingOTP mocks base method.
+func (m *MockUserService) ValidatingOTP(userDetails model.OTPVerification) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidatingOTP", userDetails)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ValidatingOTP indicates an expected call of ValidatingOTP.
+func (mr *MockUserServiceMockRecorder) ValidatingOTP(userDetails any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidatingOTP", reflect.TypeOf((*MockUserService)(nil).ValidatingOTP), userDetails)
 }
