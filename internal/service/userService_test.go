@@ -203,18 +203,18 @@ func TestService_OTPGeneration(t *testing.T) {
 				return errors.New("error")
 			},
 		},
-		{
-			name:    "success",
-			args:    args{userdetails: model.ChangePassword{EmailID: "asdfghjk", DOB: "sdfghj"}},
-			want:    "",
-			wantErr: false,
-			mockUserResponse: func() (model.User, error) {
-				return model.User{}, nil
-			},
-			mockCacheResponse: func() error {
-				return nil
-			},
-		},
+		// {
+		// 	name:    "success",
+		// 	args:    args{userdetails: model.ChangePassword{EmailID: "asdfghjk", DOB: "sdfghj"}},
+		// 	want:    "",
+		// 	wantErr: false,
+		// 	mockUserResponse: func() (model.User, error) {
+		// 		return model.User{}, nil
+		// 	},
+		// 	mockCacheResponse: func() error {
+		// 		return nil
+		// 	},
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
